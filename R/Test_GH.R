@@ -52,14 +52,11 @@ wphu_points <- wphu_shp %>%
 wphu_points
 
 #=================== Meshblocks ================================= More accurate
-wphu_MB <- read.csv('../data-raw/MB_WPHU.csv')%>%
-  mutate(ID= as.character(MB_CODE_2021))
 
 wphu_MB_erp <- read.csv('../data-raw/MB_Counts.csv') %>%
   mutate(ID= as.character(MB_CODE_2021))
 
-MB_shp <- st_read('../data-raw/MB_2021_AUST_SHP_GDA94/MB_2021_AUST_GDA94.shp')%>%
-  filter(MB_CODE21 %in% wphu_MB$ID)
+MB_shp <- st_read('../data-raw/MB_2021_WPHU_SHP_GDA94/MB_2021_WPHU_GDA94.shp')
 
 # Get centroids of MBs, population data and weighted lat/long
 wphu_mb_shp <- MB_shp %>%

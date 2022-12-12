@@ -19,12 +19,23 @@ wphu_mb_shp <- MB_shp %>%
 usethis::use_data(wphu_mb_shp)
 
 weighted_centre_MB <- wphu_mb_shp %>%
-    summarise(
+    dplyr::select(
+        Xw,
+        Yw,
+        Person
+    ) %>%
+    tibble::as_tibble() %>%
+    dplyr::summarise(
         sXw = sum(Xw),
         sYw = sum(Yw),
         sP = sum(Person),
         centre_longitude = sXw / sP,
         centre_latitude = sYw / sP
+    ) %>%
+    dplyr::select(
+        -sXw,
+        -sYw,
+        -sP
     )
 
 usethis::use_data(weighted_centre_MB)

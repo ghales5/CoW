@@ -2,7 +2,8 @@
 #' Find the weighted centroid of a given shapefile with provided weights
 #'
 #' Finds the weighted centroid of a given set of coordinates, weighted by a
-#' user-specified column
+#' user-specified column. The centre is calculated as:
+#' \deqn{(x_c, y_c) = \left( \sum_i x_i w_i, \sum_i y_i w_i \right) / \sum_j w_j}
 #'
 #' @param shape Object of class `sf` that has the coordinates and weights as features.
 #' @param longitude Column containing the longitude of the centroids to find the

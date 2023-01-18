@@ -47,3 +47,15 @@ find_weighted_centroid <- function(shape, longitude, latitude, person_weight) {
         ) %>%
         as.data.frame()
 }
+
+# find_weighted_centroid_df <- function(person_list, geography = c("postcode","lga","meshblock")) {
+
+#     if (geography == "meshblock") {
+#         shp <- wphu_shp_mb
+#     }
+
+#     shp <- shp %>%
+#         left_join(person_list, by=c("MB_CODE21"="meshblock")
+
+#     find_weighted_centroid(...)
+# }

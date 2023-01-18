@@ -4,7 +4,7 @@ wphu_MB_erp <- read.csv("data-raw/MB_Counts.csv") %>%
 MB_shp <- sf::st_read("data-raw/MB_2021_WPHU_SHP_GDA94/MB_2021_WPHU_GDA94.shp")
 
 # Get centroids of MBs, population data and weighted lat/long
-wphu_mb_shp <- MB_shp %>%
+shp_wphu_mb <- MB_shp %>%
     dplyr::mutate(
         centroids = sf::st_centroid(st_geometry(.)),
         x = unlist(map(centroids, 1)),
@@ -16,4 +16,4 @@ wphu_mb_shp <- MB_shp %>%
         Yw = (y * Person)
     )
 
-usethis::use_data(wphu_mb_shp)
+usethis::use_data(shp_wphu_mb)

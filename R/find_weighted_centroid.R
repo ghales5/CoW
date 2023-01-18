@@ -16,7 +16,13 @@
 #' * `centre_longitude`: Longitude of the geographic centre
 #' * `centre_latitude`: Latitude of the geographic centre
 #' @examples
-#' find_weighted_centroid(wphu_mb_shp, x, y, Person)
+#' find_weighted_centroid(shape = wphu_mb_shp, longitude = x, latitude = y,
+#' person_weight = Person)
+#' #> # A tibble: 1 x 2
+#'  centre_longitude centre_latitude
+#'             <dbl>           <dbl>
+#' 1             145.           -37.8
+#' 
 find_weighted_centroid <- function(shape, longitude, latitude, person_weight) {
     shape %>%
         dplyr::select(
@@ -38,5 +44,6 @@ find_weighted_centroid <- function(shape, longitude, latitude, person_weight) {
         ) %>%
         dplyr::select(
             -sXw, -sYw, -sW
-        )
+        ) %>%
+        as.data.frame()
 }

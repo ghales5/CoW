@@ -6,3 +6,4 @@ source(file.path(
     ),
     ".vscode-R", "init.R"
 ))
+options(rdeck.mapbox_access_token="pk.eyJ1IjoibWlrZWx5ZGVhbW9yZSIsImEiOiJjbGQyZmVwM2MwODM0M3ZxaDNscTFubTF3In0.mUGkYsAz7lQi33zRrXnCyg")

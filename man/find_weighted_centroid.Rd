@@ -30,5 +30,11 @@ user-specified column. The centre is calculated as:
 \deqn{(x_c, y_c) = \left( \sum_i x_i w_i, \sum_i y_i w_i \right) / \sum_j w_j}
 }
 \examples{
-find_weighted_centroid(wphu_mb_shp, x, y, Person)
+find_weighted_centroid(shape = wphu_mb_shp, longitude = x, latitude = y,
+person_weight = Person)
+#> # A tibble: 1 x 2
+ centre_longitude centre_latitude
+            <dbl>           <dbl>
+1             145.           -37.8
+
 }

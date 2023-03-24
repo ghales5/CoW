@@ -117,14 +117,8 @@ server <- function(input, output, session) {
       radius_scale = 250
     ) |>
     ## RAW DATA
-    add_scatterplot_layer(
-      id = "data_raw",
-      name = "Data",
-      data = NULL,
-      get_fill_color = "#63C5DA",
-      visible = FALSE,
-      get_position = geometry,
-      radius_scale = 200
+    add_data_layer(
+      id = "data_raw"
     )
   output$map <- renderRdeck(map)
 
@@ -208,6 +202,14 @@ server <- function(input, output, session) {
     input$dataIncrease,
     {
       num_data_files(num_data_files() + 1)
+
+      layer_name <- paste0("data_", num_data_files())
+      if (!check_layer_name(rdeck_proxy("map"), layer_name)) {
+        rdeck_proxy("map") |>
+          add_data_layer(
+            id = layer_name
+          )
+      }
     }
   )
   observeEvent(

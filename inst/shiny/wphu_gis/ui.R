@@ -4,10 +4,11 @@ library(h3jsr)
 library(viridis)
 library(sf)
 library(rdeck)
+library(colourpicker)
 
 
 
-ui <- bootstrapPage(
+ui <- fluidPage(
   tags$style(
     type = "text/css", "
       html, body {width:100%;height:100%}
@@ -23,19 +24,24 @@ ui <- bootstrapPage(
       }
     "
   ),
-  rdeckOutput("map", height = "100%"),
-  absolutePanel(
-    id = "selectors",
-    bottom = 10, left = 10,
-    fileInput(
-      "input_latlong", "Choose CSV File",
-      multiple = FALSE,
-      accept = c("text/csv",
-                         "text/comma-separated-values,text/plain",
-                         ".csv")
+  fluidRow(
+    style = "height:100vh",
+    column(
+      3,
+      h2("Data"),
+      uiOutput(
+        "fileInputs"
+      ),
+      actionButton("dataDecrease", label = NULL, icon = icon("minus", lib = "glyphicon")),
+      actionButton("dataIncrease", label = NULL, icon = icon("plus", lib = "glyphicon")),
+      tableOutput("files")
     ),
-    tableOutput("files")
-  )
+    column(
+      9,
+      rdeckOutput("map", height = "100vh")
+    )
+  ),
+
   #   checkboxGroupInput(
   #     inputId = "geographies",
   #     label = "Geographies",

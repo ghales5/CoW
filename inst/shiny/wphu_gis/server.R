@@ -28,6 +28,7 @@ server <- function(input, output, session) {
     map_style = mapbox_dark(),
     initial_bounds = st_bbox(shp_wphu_lga)
   ) |>
+    ## MESHBLOCK TYPES
     add_polygon_layer(
       id = "population_meshblock",
       name = "Meshblock",
@@ -46,6 +47,7 @@ server <- function(input, output, session) {
       opacity = 0.3,
       group_name = "Populations"
     ) |>
+    ## MESHBLOCK CENTROIDS
     add_scatterplot_layer(
       id = "meshblock_centroids",
       name = "Meshblock",
@@ -56,6 +58,7 @@ server <- function(input, output, session) {
       group_name = "Centroids",
       visibility_toggle = TRUE
     ) |>
+    ## LGA CENTROIDS
     add_scatterplot_layer(
       id = "lga_centroids",
       name = "LGA",
@@ -66,61 +69,29 @@ server <- function(input, output, session) {
       group_name = "Centroids",
       visibility_toggle = TRUE
     ) |>
-    add_polygon_layer(
+    ## LGA OUTLINES
+    add_boundary_layer(
       id = "outline_LGA",
       name = "LGA",
-      filled = FALSE,
-      data = st_transform(
-        shp_wphu_lga,
-        crs = "+init=epsg:4326"
-      ),
-      get_polygon = geometry,
-      stroked = TRUE,
-      get_line_color = "#663399ff",
-      line_width_units = "pixels",
-      line_width_min_pixels = 5,
-      visibility_toggle = TRUE,
-      group_name = "Boundaries"
+      data = shp_wphu_lga,
+      tooltip = LGA_NAME22
     ) |>
-    add_polygon_layer(
+    ## MESHBLOCK OUTLINES
+    add_boundary_layer(
       id = "outline_meshblock",
       name = "Meshblock",
-      filled = FALSE,
-      visible = FALSE,
-      data = st_transform(
-        shp_wphu_mb,
-        crs = "+init=epsg:4326"
-      ),
-      get_polygon = geometry,
-      stroked = TRUE,
-      get_line_color = "#663399ff",
-      line_width_units = "pixels",
-      line_width_min_pixels = 2,
-      visibility_toggle = TRUE,
-      # get_fill_color = scale_color_category(
-      #   col = MB_CAT21,
-      #   palette = scales::brewer_pal("qual")
-      # ),
-      # opacity = 0.3,
-      group_name = "Boundaries"
+      data = shp_wphu_mb,
+      visible = FALSE
     ) |>
-    add_polygon_layer(
+    ## POSTCODE OUTLINES
+    add_boundary_layer(
       id = "outline_postcode",
       name = "Postcode",
-      filled = FALSE,
-      visible = FALSE,
-      data = st_transform(
-        shp_wphu_poa %>% st_intersection(shp_wphu_outline),
-        crs = "+init=epsg:4326"
-      ),
-      get_polygon = geometry,
-      stroked = TRUE,
-      get_line_color = "#663399ff",
-      line_width_units = "pixels",
-      line_width_min_pixels = 2,
-      visibility_toggle = TRUE,
-      group_name = "Boundaries"
+      data = shp_wphu_poa %>% st_intersection(shp_wphu_outline),
+      tooltip = POA_NAME21,
+      visible = FALSE
     ) |>
+    ## ALL OF WPHU CENTROID
     add_scatterplot_layer(
       id = "pop_centre",
       name = "Population Centre",
@@ -134,6 +105,7 @@ server <- function(input, output, session) {
       auto_highlight = TRUE,
       tooltip = tooltip
     ) |>
+    ## DATA CENTROID
     add_scatterplot_layer(
       id = "data_centroid",
       name = "Data",
@@ -144,6 +116,7 @@ server <- function(input, output, session) {
       get_position = geometry,
       radius_scale = 250
     ) |>
+    ## RAW DATA
     add_scatterplot_layer(
       id = "data_raw",
       name = "Data",
@@ -156,46 +129,102 @@ server <- function(input, output, session) {
   output$map <- renderRdeck(map)
 
   raw_data <- reactive({
-    req(input$input_latlong)
-    infile <- read.csv(input$input_latlong$datapath)
+    req(input$data_1)
+    infile <- read.csv(input$data_1$datapath)
 
     infile |>
       select(longitude, latitude, person_weight)
   })
 
   observe({
-    req(input$input_latlong)
+    req(input$data_1)
     rdeck_proxy("map") |>
-        update_scatterplot_layer(
-          id = "data_centroid",
-          data = find_weighted_centroid(raw_data(), longitude, latitude, person_weight) |>
-            convert_points_to_sfc(tooltip = "Data"),
-          get_position = geometry,
-          get_radius = 1,
-          get_fill_color = "#63C5DA",
-          get_line_color = "#000000ff",
-          get_line_width = 1
-        )
+      update_scatterplot_layer(
+        id = "data_centroid",
+        data = find_weighted_centroid(raw_data(), longitude, latitude, person_weight) |>
+          convert_points_to_sfc(tooltip = "Data"),
+        get_position = geometry,
+        get_radius = 1,
+        get_fill_color = "#63C5DA",
+        get_line_color = "#000000ff",
+        get_line_width = 1
+      )
   })
 
   observe({
-    req(input$input_latlong)
+    req(input$data_1)
     rdeck_proxy("map") |>
-        update_scatterplot_layer(
-          id = "data_raw",
-          data = apply(raw_data(), MARGIN=1, convert_points_to_sfc, tooltip="data") |> bind_rows(),
-          get_position = geometry,
-          get_radius = 1,
-          get_fill_color = "#63C5DA",
-          get_line_color = "#000000ff",
-          get_line_width = 1,
-          visible = TRUE
-        )
+      update_scatterplot_layer(
+        id = "data_raw",
+        data = apply(raw_data(), MARGIN = 1, convert_points_to_sfc, tooltip = "data") |> bind_rows(),
+        get_position = geometry,
+        get_radius = 1,
+        get_fill_color = "#63C5DA",
+        get_line_color = "#000000ff",
+        get_line_width = 1,
+        visible = TRUE
+      )
   })
   output$files <- renderTable(raw_data())
+
+  observe({
+    req(input$data_colour_1)
+    rdeck_proxy("map") |>
+      update_scatterplot_layer(
+        id = "data_raw",
+        get_fill_color = input$data_colour_1,
+      ) |>
+      update_scatterplot_layer(
+        id = "data_centroid",
+        get_fill_color = input$data_colour_1,
+      )
+  })
+
+  num_data_files <- reactiveVal(1)
+
+  output$fileInputs <- renderUI({
+    lapply(1:num_data_files(), function(i) {
+      wellPanel(
+        fileInput(
+          paste0("data_", i), "Data upload (CSV)",
+          multiple = FALSE,
+          accept = c(
+            "text/csv",
+            "text/comma-separated-values,text/plain",
+            ".csv"
+          )
+        ),
+        colourInput(
+          paste0("data_colour_", i),
+          label = "Data Colour",
+          showColour = "background"
+        )
+      )
+    }) |> tagList()
+  })
+
+
+  observeEvent(
+    input$dataIncrease,
+    {
+      num_data_files(num_data_files() + 1)
+    }
+  )
+  observeEvent(
+    input$dataDecrease,
+    {
+      if (num_data_files() >= 2) {
+        num_data_files(num_data_files() - 1)
+      }
+    }
+  )
 }
 
 # Postcode boundaries/centroids
 # Uploaded centroids
 # Smoothed population colours (by MB)
 # Seperate centroids into geographic and population
+# Multiple files uploaded
+# Geographic centroid for entire reason
+# Add hover labels for postcode/LGA etc
+# Remove airports from mapbox

@@ -106,75 +106,98 @@ server <- function(input, output, session) {
       tooltip = tooltip
     ) |>
     ## DATA CENTROID
-    add_scatterplot_layer(
-      id = "data_centroid",
-      name = "Data",
-      group_name = "Centroids",
-      data = NULL,
-      get_fill_color = "#63C5DA",
-      visible = FALSE,
-      get_position = geometry,
-      radius_scale = 250
+    add_data_centroid_layer(
+      id = "data_centroid_1",
+      dataset_num = 1
     ) |>
     ## RAW DATA
     add_data_layer(
-      id = "data_raw"
+      id = "data_1",
+      dataset_num = 1
     )
   output$map <- renderRdeck(map)
 
-  raw_data <- reactive({
-    req(input$data_1)
-    infile <- read.csv(input$data_1$datapath)
-
-    infile |>
-      select(longitude, latitude, person_weight)
-  })
-
-  observe({
-    req(input$data_1)
-    rdeck_proxy("map") |>
-      update_scatterplot_layer(
-        id = "data_centroid",
-        data = find_weighted_centroid(raw_data(), longitude, latitude, person_weight) |>
-          convert_points_to_sfc(tooltip = "Data"),
-        get_position = geometry,
-        get_radius = 1,
-        get_fill_color = "#63C5DA",
-        get_line_color = "#000000ff",
-        get_line_width = 1
-      )
-  })
-
-  observe({
-    req(input$data_1)
-    rdeck_proxy("map") |>
-      update_scatterplot_layer(
-        id = "data_raw",
-        data = apply(raw_data(), MARGIN = 1, convert_points_to_sfc, tooltip = "data") |> bind_rows(),
-        get_position = geometry,
-        get_radius = 1,
-        get_fill_color = "#63C5DA",
-        get_line_color = "#000000ff",
-        get_line_width = 1,
-        visible = TRUE
-      )
-  })
-  output$files <- renderTable(raw_data())
-
-  observe({
-    req(input$data_colour_1)
-    rdeck_proxy("map") |>
-      update_scatterplot_layer(
-        id = "data_raw",
-        get_fill_color = input$data_colour_1,
-      ) |>
-      update_scatterplot_layer(
-        id = "data_centroid",
-        get_fill_color = input$data_colour_1,
-      )
-  })
-
+  # Number of data file upload boxes
   num_data_files <- reactiveVal(1)
+
+  # Loading in of data
+  # Is a list of all of the uploaded files.
+  raw_data <- reactive({
+    lapply(seq(1, num_data_files()), function(i) {
+      fname <- paste0("data_", i)
+      if (!is.null(input[[fname]])) {
+        infile <- read.csv(input[[fname]]$datapath)
+        return(infile |>
+          select(longitude, latitude, person_weight))
+      } else {
+        return(NULL)
+      }
+    })
+  })
+
+
+  # Update's the data_i scatterplot layer
+  # When new data is uploaded (i.e. num_data_files changes or
+  # raw_data changes)
+  observe({
+    lapply(seq_along(raw_data()), function(i) {
+      data_name <- paste0("data_", i)
+      if (!is.null(input[[data_name]])) {
+        rdeck_proxy("map") |>
+          update_scatterplot_layer(
+            id = data_name,
+            data = apply(raw_data()[[i]], MARGIN = 1, convert_points_to_sfc, tooltip = "data") |> bind_rows(),
+            get_position = geometry,
+            get_radius = 1,
+            get_fill_color = "#63C5DA",
+            get_line_color = "#000000ff",
+            get_line_width = 1,
+            visible = TRUE
+          )
+      }
+    })
+  })
+
+  # Updates the centroids
+  # Uses identical logic to drawing the actual data
+  # But the data call finds the weighted centroid.
+  observe({
+    lapply(seq_along(raw_data()), function(i) {
+      data_name <- paste0("data_", i)
+      if (!is.null(input[[data_name]])) {
+        rdeck_proxy("map") |>
+          update_scatterplot_layer(
+            id = paste0("data_centroid_", i),
+            data = find_weighted_centroid(raw_data()[[i]], longitude, latitude, person_weight) |>
+              convert_points_to_sfc(tooltip = "Data"),
+            get_position = geometry,
+            get_radius = 1,
+            get_fill_color = "#63C5DA",
+            get_line_color = "#000000ff",
+            get_line_width = 1
+          )
+      }
+    })
+  })
+
+
+  observe({
+    lapply(seq_along(raw_data()), function(i) {
+      data_name <- paste0("data_", i)
+      req(input[[data_name]], cancelOutput = TRUE)
+      rdeck_proxy("map") |>
+        update_scatterplot_layer(
+          id = data_name,
+          get_fill_color = input[[paste0("data_colour_", i)]]
+        ) |>
+        update_scatterplot_layer(
+          id = paste0("data_centroid_", i),
+          get_fill_color = input[[paste0("data_colour_", i)]]
+        )
+    })
+  })
+
+
 
   output$fileInputs <- renderUI({
     lapply(1:num_data_files(), function(i) {
@@ -204,10 +227,16 @@ server <- function(input, output, session) {
       num_data_files(num_data_files() + 1)
 
       layer_name <- paste0("data_", num_data_files())
+      centroid_layer_name <- paste0("data_centroid_", num_data_files())
       if (!check_layer_name(rdeck_proxy("map"), layer_name)) {
         rdeck_proxy("map") |>
           add_data_layer(
-            id = layer_name
+            id = layer_name,
+            dataset_num = num_data_files()
+          ) |>
+          add_data_centroid_layer(
+            id = centroid_layer_name,
+            dataset_num = num_data_files()
           )
       }
     }

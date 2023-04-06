@@ -1,0 +1,33 @@
+body {
+    background-color: #e9f8f6;
+}
+
+.header {
+    color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+    box-shadow: inset 0px -3px 0px #CB007B;
+    background-color: #1A0852;
+    text-align: center;
+    background-image: url("logo_1.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: right center;
+    background-origin: content-box
+}
+
+.data-col {
+    background-color: #e9f8f6;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.data-col h3 {
+    color: #CB007B;
+}
+
+.control-label {
+    color: #1A0852;
+}
+
+.bottom-bar {
+    background-image: url("logo_1.png");
+}

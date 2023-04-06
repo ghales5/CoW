@@ -13,7 +13,7 @@ server <- function(input, output, session) {
     shape = shp_wphu_mb, longitude = x, latitude = y,
     person_weight = Person
   ) |>
-    convert_points_to_sfc(tooltip = "Population Centre")
+    convert_points_to_sfc(longitude_col = "centre_longitude", latitude_col = "centre_latitude", tooltip = "Population Centre")
 
   shp_wphu_outline <- st_transform(
     shp_wphu_outline,
@@ -55,7 +55,7 @@ server <- function(input, output, session) {
       get_position = centroids,
       radius_scale = 100,
       visible = FALSE,
-      group_name = "Centroids",
+      group_name = "Geographic Centroids",
       visibility_toggle = TRUE
     ) |>
     ## LGA CENTROIDS
@@ -66,7 +66,7 @@ server <- function(input, output, session) {
       get_position = centroids,
       radius_scale = 250,
       visible = FALSE,
-      group_name = "Centroids",
+      group_name = "Geographic Centroids",
       visibility_toggle = TRUE
     ) |>
     ## LGA OUTLINES
@@ -94,8 +94,8 @@ server <- function(input, output, session) {
     ## ALL OF WPHU CENTROID
     add_scatterplot_layer(
       id = "pop_centre",
-      name = "Population Centre",
-      group_name = "Centroids",
+      name = "Centre of WPHU",
+      group_name = "Population Centroids",
       data = population_centroid,
       get_position = geometry,
       radius_scale = 250,
@@ -146,9 +146,11 @@ server <- function(input, output, session) {
         rdeck_proxy("map") |>
           update_scatterplot_layer(
             id = data_name,
-            data = apply(raw_data()[[i]], MARGIN = 1, convert_points_to_sfc, tooltip = "data") |> bind_rows(),
+            data = apply(raw_data()[[i]], MARGIN = 1, convert_points_to_sfc, tooltip = "data") |>
+              bind_rows() |>
+              mutate(person_weight = raw_data()[[i]]$person_weight),
             get_position = geometry,
-            get_radius = 1,
+            get_radius = person_weight,
             get_fill_color = "#63C5DA",
             get_line_color = "#000000ff",
             get_line_width = 1,
@@ -169,7 +171,7 @@ server <- function(input, output, session) {
           update_scatterplot_layer(
             id = paste0("data_centroid_", i),
             data = find_weighted_centroid(raw_data()[[i]], longitude, latitude, person_weight) |>
-              convert_points_to_sfc(tooltip = "Data"),
+              convert_points_to_sfc(tooltip = "Data", longitude_col = "centre_longitude", latitude_col = "centre_latitude"),
             get_position = geometry,
             get_radius = 1,
             get_fill_color = "#63C5DA",
@@ -249,13 +251,22 @@ server <- function(input, output, session) {
       }
     }
   )
+
+  output$mapdownload <- downloadHandler(
+    filename = function() {
+      paste("wphu-center-map", Sys.Date(), ".html", sep = "")
+    },
+    content = function(con) {
+      htmlwidgets::saveWidget(
+        widget = map,
+        file = con
+      )
+    }
+  )
 }
 
-# Postcode boundaries/centroids
-# Uploaded centroids
+# Postcode centroids
 # Smoothed population colours (by MB)
-# Seperate centroids into geographic and population
-# Multiple files uploaded
+# Separate centroids into geographic and population
 # Geographic centroid for entire reason
-# Add hover labels for postcode/LGA etc
 # Remove airports from mapbox

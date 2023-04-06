@@ -128,7 +128,8 @@ server <- function(input, output, session) {
       if (!is.null(input[[fname]])) {
         infile <- read.csv(input[[fname]]$datapath)
         return(infile |>
-          select(longitude, latitude, person_weight))
+          select(longitude, latitude, person_weight) |>
+          mutate(filename = input[[fname]]$name))
       } else {
         return(NULL)
       }
@@ -154,7 +155,8 @@ server <- function(input, output, session) {
             get_fill_color = "#63C5DA",
             get_line_color = "#000000ff",
             get_line_width = 1,
-            visible = TRUE
+            visible = TRUE,
+            name = tools::file_path_sans_ext(unique(raw_data()[[i]]$filename))
           )
       }
     })
@@ -176,7 +178,8 @@ server <- function(input, output, session) {
             get_radius = 1,
             get_fill_color = "#63C5DA",
             get_line_color = "#000000ff",
-            get_line_width = 1
+            get_line_width = 1,
+            name = tools::file_path_sans_ext(unique(raw_data()[[i]]$filename))
           )
       }
     })

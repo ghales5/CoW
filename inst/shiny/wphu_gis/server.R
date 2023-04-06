@@ -24,6 +24,13 @@ server <- function(input, output, session) {
     crs = "+init=epsg:4326"
   )
 
+  entire_region_centroid <- shp_wphu_lga |>
+    st_union() |>
+    st_centroid() |>
+    st_coordinates() |>
+    as.data.frame() |>
+    convert_points_to_sfc(longitude_col = "X", latitude_col = "Y", tooltip = "Geographic Centre")
+
   map <- rdeck(
     map_style = mapbox_dark(),
     initial_bounds = st_bbox(shp_wphu_lga)
@@ -104,6 +111,19 @@ server <- function(input, output, session) {
       pickable = TRUE,
       auto_highlight = TRUE,
       tooltip = tooltip
+    ) |>
+    ## ALL OF WPHU GEOGRAPHIC CENTROID
+    add_scatterplot_layer(
+      id = "geo_centre",
+      name = "Centre of WPHU",
+      group_name = "Geographic Centroids",
+      data = entire_region_centroid,
+      get_position = geometry,
+      radius_scale = 250,
+      get_fill_color = "#9bd318",
+      visible = TRUE,
+      pickable = TRUE,
+      auto_highlight = TRUE
     ) |>
     ## DATA CENTROID
     add_data_centroid_layer(
@@ -270,6 +290,5 @@ server <- function(input, output, session) {
 
 # Postcode centroids
 # Smoothed population colours (by MB)
-# Separate centroids into geographic and population
 # Geographic centroid for entire reason
 # Remove airports from mapbox

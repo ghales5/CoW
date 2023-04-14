@@ -101,7 +101,7 @@ server <- function(input, output, session) {
     ## ALL OF WPHU CENTROID
     add_scatterplot_layer(
       id = "pop_centre",
-      name = "Centre of WPHU",
+      name = "WPHU",
       group_name = "Population Centroids",
       data = population_centroid,
       get_position = geometry,
@@ -115,7 +115,7 @@ server <- function(input, output, session) {
     ## ALL OF WPHU GEOGRAPHIC CENTROID
     add_scatterplot_layer(
       id = "geo_centre",
-      name = "Centre of WPHU",
+      name = "WPHU",
       group_name = "Geographic Centroids",
       data = entire_region_centroid,
       get_position = geometry,
@@ -189,11 +189,17 @@ server <- function(input, output, session) {
     lapply(seq_along(raw_data()), function(i) {
       data_name <- paste0("data_", i)
       if (!is.null(input[[data_name]])) {
+        centroid <- find_weighted_centroid(raw_data()[[i]], longitude, latitude, person_weight) |>
+          convert_points_to_sfc(tooltip = "Data", longitude_col = "centre_longitude", latitude_col = "centre_latitude")
+
+        if (lengths(st_intersects(shp_wphu_outline, centroid)) == 0) {
+          shinyalert::shinyalert("Data centroid is outside of the WPHU boundary", type = "warning")
+        }
+
         rdeck_proxy("map") |>
           update_scatterplot_layer(
             id = paste0("data_centroid_", i),
-            data = find_weighted_centroid(raw_data()[[i]], longitude, latitude, person_weight) |>
-              convert_points_to_sfc(tooltip = "Data", longitude_col = "centre_longitude", latitude_col = "centre_latitude"),
+            data = ,
             get_position = geometry,
             get_radius = 1,
             get_fill_color = "#63C5DA",
@@ -281,7 +287,7 @@ server <- function(input, output, session) {
     },
     content = function(con) {
       htmlwidgets::saveWidget(
-        widget = map,
+        widget = rdeck_proxy("map"),
         file = con
       )
     }
@@ -290,5 +296,11 @@ server <- function(input, output, session) {
 
 # Postcode centroids
 # Smoothed population colours (by MB)
-# Geographic centroid for entire reason
 # Remove airports from mapbox
+# Add shinyalert for if centre is outside the catchment
+# Legend for colours
+# Fix download button
+# Function to actually launch shiny
+# Postcode templates
+# Strip out long/lat into joins
+# Clean up description

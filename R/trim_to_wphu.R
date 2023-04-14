@@ -26,7 +26,7 @@ trim_to_wphu <- function(pts) {
         .f = function(long, lat) {
             sfc_point(long, lat) |>
                 st_intersects(shp_wphu_outline) |>
-                length()
+                lengths()
         }
     ) |> unlist()
 

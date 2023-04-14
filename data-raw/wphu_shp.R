@@ -1,6 +1,6 @@
 # Creates shapefiles for the entire WPHU Shapefile
 # without the LGA lines.
-shp_wphu_outline <- shp_wphu %>%
+shp_wphu_outline <- shp_wphu_lga %>%
     st_make_valid() %>%
     st_union()
 

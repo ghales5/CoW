@@ -31,6 +31,24 @@ server <- function(input, output, session) {
     as.data.frame() |>
     convert_points_to_sfc(longitude_col = "X", latitude_col = "Y", tooltip = "Geographic Centre")
 
+  # Dummy data frame for the legend - just stores the centroids because
+  # there's less data to carry around.
+  # We have visibility_toggle = FALSE for this layer
+  # so it can never be disabled.
+  combined_data_for_legend <- reactive({
+    rbind(
+      entire_region_centroid |> mutate(color = "#9bd318"),
+      population_centroid |> mutate(color = "#B22222"),
+      lapply(seq_along(raw_data()), function(i) {
+        data_name <- paste0("data_", i)
+        req(input[[data_name]], cancelOutput = TRUE)
+        find_weighted_centroid(raw_data()[[i]], longitude, latitude, person_weight) |>
+          convert_points_to_sfc(tooltip = tools::file_path_sans_ext(unique(raw_data()[[i]]$filename)), longitude_col = "centre_longitude", latitude_col = "centre_latitude") |>
+          mutate(color = input[[paste0("data_colour_", i)]])
+      }) |> bind_rows()
+    )
+  })
+
   map <- rdeck(
     map_style = mapbox_dark(),
     initial_bounds = st_bbox(shp_wphu_lga)
@@ -192,14 +210,18 @@ server <- function(input, output, session) {
         centroid <- find_weighted_centroid(raw_data()[[i]], longitude, latitude, person_weight) |>
           convert_points_to_sfc(tooltip = "Data", longitude_col = "centre_longitude", latitude_col = "centre_latitude")
 
+        # st_intersects will return an empty list if the intersection is empty
+        # We can check with length*s* (not length) to see if this is the case
+        # If it is, lauch a dialog warning box saying it's outside the boundary
+        # But allow computation and updating to continue.
         if (lengths(st_intersects(shp_wphu_outline, centroid)) == 0) {
           shinyalert::shinyalert("Data centroid is outside of the WPHU boundary", type = "warning")
         }
-
         rdeck_proxy("map") |>
           update_scatterplot_layer(
             id = paste0("data_centroid_", i),
-            data = ,
+            data = find_weighted_centroid(raw_data()[[i]], longitude, latitude, person_weight) |>
+              convert_points_to_sfc(tooltip = "Data", longitude_col = "centre_longitude", latitude_col = "centre_latitude"),
             get_position = geometry,
             get_radius = 1,
             get_fill_color = "#63C5DA",
@@ -251,7 +273,9 @@ server <- function(input, output, session) {
     }) |> tagList()
   })
 
-
+  # Fires when the + button is pressed
+  # Adds extra layers to the map, but only if they don't exist (using `check_layer_name`)
+  # Make sure both data and data_centroid layers added.
   observeEvent(
     input$dataIncrease,
     {
@@ -272,6 +296,8 @@ server <- function(input, output, session) {
       }
     }
   )
+  # Same as adding but fires when the - button is pressed
+  # Note we don't remove layers, maybe we should set `visiblity = FALSE`?
   observeEvent(
     input$dataDecrease,
     {
@@ -292,13 +318,26 @@ server <- function(input, output, session) {
       )
     }
   )
+
+  observe({
+    rdeck_proxy("map") |>
+      add_scatterplot_layer(
+        id = "legend",
+        name = "Legend",
+        visibility_toggle = FALSE,
+        data = combined_data_for_legend(),
+        get_position = geometry,
+        get_fill_color = scale_color_category(
+          palette = combined_data_for_legend()$color,
+          col = tooltip
+        )
+      )
+  })
 }
 
 # Postcode centroids
 # Smoothed population colours (by MB)
 # Remove airports from mapbox
-# Add shinyalert for if centre is outside the catchment
-# Legend for colours
 # Fix download button
 # Function to actually launch shiny
 # Postcode templates

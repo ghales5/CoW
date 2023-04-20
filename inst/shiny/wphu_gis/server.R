@@ -9,6 +9,13 @@ server <- function(input, output, session) {
       centroids = st_transform(centroids, crs = "+init=epsg:4326")
     )
 
+  poa_centroids <- shp_wphu_poa |>
+    mutate(
+      centroids = st_transform(centroids, crs = "+init=epsg:4326")
+    ) |>
+    st_transform(crs = "+init=epsg:4326")
+
+
   population_centroid <- find_weighted_centroid(
     shape = shp_wphu_mb, longitude = x, latitude = y,
     person_weight = Person
@@ -83,6 +90,18 @@ server <- function(input, output, session) {
       group_name = "Geographic Centroids",
       visibility_toggle = TRUE
     ) |>
+    ## POA CENTROIDS
+    add_scatterplot_layer(
+      id = "poa_centroids",
+      name = "Postcode",
+      data = poa_centroids,
+      get_position = centroids,
+      radius_scale = 250,
+      visible = FALSE,
+      group_name = "Geographic Centroids",
+      visibility_toggle = TRUE,
+      get_fill_color = "#87CEEB"
+    ) |>
     ## LGA CENTROIDS
     add_scatterplot_layer(
       id = "lga_centroids",
@@ -112,7 +131,7 @@ server <- function(input, output, session) {
     add_boundary_layer(
       id = "outline_postcode",
       name = "Postcode",
-      data = shp_wphu_poa %>% st_intersection(shp_wphu_outline),
+      data = shp_wphu_poa,
       tooltip = POA_NAME21,
       visible = FALSE
     ) |>
@@ -335,11 +354,17 @@ server <- function(input, output, session) {
   })
 }
 
-# Postcode centroids
 # Smoothed population colours (by MB)
 # Remove airports from mapbox
 # Fix download button
-# Function to actually launch shiny
 # Postcode templates
 # Strip out long/lat into joins
 # Clean up description
+
+
+## Since last time
+# Trim function implemented
+# Warning for outside region
+# Legend done in a hacky kind of way
+# Postcode centroids are in - have untrimmed the shapefile.
+# Function to actually launch shiny

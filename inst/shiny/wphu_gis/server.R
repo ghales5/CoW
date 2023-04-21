@@ -31,6 +31,16 @@ server <- function(input, output, session) {
     crs = "+init=epsg:4326"
   )
 
+  population_grid <- st_make_grid(
+    meshblock_centroids,
+    cellsize = c(0.005, 0.005),
+    square = FALSE
+  ) |>
+    st_transform(crs = "+init=epsg:4326") |>
+    st_as_sf() %>%
+    mutate(pt_count = lengths(st_intersects(., meshblock_centroids$centroids))) %>%
+    filter(pt_count > 0)
+
   entire_region_centroid <- shp_wphu_lga |>
     st_union() |>
     st_centroid() |>
@@ -63,7 +73,7 @@ server <- function(input, output, session) {
     ## MESHBLOCK TYPES
     add_polygon_layer(
       id = "population_meshblock",
-      name = "Meshblock",
+      name = "Meshblock Types",
       filled = TRUE,
       visible = FALSE,
       data = st_transform(
@@ -76,8 +86,20 @@ server <- function(input, output, session) {
         col = MB_CAT21,
         palette = scales::brewer_pal("qual")
       ),
-      opacity = 0.3,
-      group_name = "Populations"
+      opacity = 0.3
+    ) |>
+    add_polygon_layer(
+      id = "meshblock_pop",
+      name = "Population",
+      data = population_grid,
+      get_fill_color = scale_color_power(
+        col = pt_count,
+        legend = FALSE
+      ),
+      visible = FALSE,
+      get_polygon = x,
+      visibility_toggle = TRUE,
+      opacity = 0.3
     ) |>
     ## MESHBLOCK CENTROIDS
     add_scatterplot_layer(
@@ -354,12 +376,10 @@ server <- function(input, output, session) {
   })
 }
 
-# Smoothed population colours (by MB)
 # Remove airports from mapbox
 # Fix download button
 # Postcode templates
 # Strip out long/lat into joins
-# Clean up description
 
 
 ## Since last time
@@ -368,3 +388,5 @@ server <- function(input, output, session) {
 # Legend done in a hacky kind of way
 # Postcode centroids are in - have untrimmed the shapefile.
 # Function to actually launch shiny
+# Smoothed population colours (by MB)
+# Clean up description

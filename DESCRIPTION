@@ -2,10 +2,10 @@ Package: CoW
 Title: The Centre of the Western Public Health Unit
 Version: 0.0.0.9000
 Authors@R: 
-    person("Gabrielle", "Hales", , "first.last@example.com", role = c("aut", "cre", "cph"),
-           ),
+    person("Gabrielle", "Hales", , "first.last@example.com", role = c("aut", "cre", "cph")
+           )
     person("Michael", "Lydeamore", , "michael.lydeamore@monash.edu", role = c("aut","cre")
-            ),
+            )
 Description: Calculates and visualises the geographic and population weighted centres of known shapes, and input data.
 License: MIT + file LICENSE
 Encoding: UTF-8

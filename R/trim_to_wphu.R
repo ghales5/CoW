@@ -16,8 +16,9 @@
 #'
 #' trim_to_wphu(example_lga_person_weights)
 #'
-#' @importFrom sf sfc_point st_intersects
-#' @importFrom purrr map2 unlist
+#' @importFrom rdeck sfc_point
+#' @importFrom sf st_intersects
+#' @importFrom purrr map2
 #' @export
 trim_to_wphu <- function(pts) {
     inside_wphu <- purrr::map2(

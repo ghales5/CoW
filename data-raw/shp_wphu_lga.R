@@ -7,7 +7,7 @@ erp_wphu_lga <- read.csv("data-raw/ERP_LGA.csv") %>%
   filter(LPHU == "WPHU")
 
 # Get centroids of LGAs, population data and weighted lat/long
-shp_wphu_lga <- shp_lga %>%
+CoW::shp_wphu_lga <- shp_lga %>%
   dplyr::mutate(
     centroids = sf::st_centroid(st_geometry(.)),
     x = unlist(purrr::map(centroids, 1)),
@@ -22,4 +22,4 @@ shp_wphu_lga <- shp_lga %>%
     crs = "+init=epsg:4326"
   )
 
-usethis::use_data(shp_wphu_lga, overwrite = TRUE)
+usethis::use_data(CoW::shp_wphu_lga, overwrite = TRUE)

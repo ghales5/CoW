@@ -23,6 +23,7 @@
 #'             <dbl>           <dbl>
 #' 1             145.           -37.8
 #' 
+#' @export 
 find_weighted_centroid <- function(shape, longitude, latitude, person_weight) {
     shape %>%
         dplyr::select(

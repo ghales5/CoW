@@ -1,3 +1,4 @@
+#' @export
 convert_points_to_sfc <- function(centroid_points = ., longitude_col = "longitude", latitude_col = "latitude", tooltip) {
     long <- as.numeric(centroid_points[longitude_col])
     lat <- as.numeric(centroid_points[latitude_col])

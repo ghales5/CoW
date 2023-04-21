@@ -1,5 +1,6 @@
+#' @export
 add_boundary_layer <- function(rdeck, id, name, data, ...) {
-    add_polygon_layer(
+    rdeck::add_polygon_layer(
         rdeck,
         id = id,
         name = name,

@@ -1,5 +1,6 @@
+#' @export
 add_data_layer <- function(rdeck, id, visible = FALSE, dataset_num, ...) {
-    add_scatterplot_layer(
+    rdeck::add_scatterplot_layer(
         rdeck,
         id = id,
         name = paste0("Dataset ", dataset_num),
@@ -14,8 +15,9 @@ add_data_layer <- function(rdeck, id, visible = FALSE, dataset_num, ...) {
     )
 }
 
+#' @export
 add_data_centroid_layer <- function(rdeck, id, visible = FALSE, dataset_num, ...) {
-    add_scatterplot_layer(
+    rdeck::add_scatterplot_layer(
         rdeck,
         id = id,
         name = paste0("Dataset ", dataset_num),

@@ -238,6 +238,8 @@ server <- function(input, output, session) {
               dplyr::mutate(person_weight = raw_data()[[i]]$person_weight),
             get_position = geometry,
             get_radius = person_weight,
+            radius_max_pixels = 20,
+            radius_units = "pixels",
             get_fill_color = "#63C5DA",
             get_line_color = "#000000ff",
             get_line_width = 1,
@@ -385,16 +387,10 @@ server <- function(input, output, session) {
 
 # Remove airports from mapbox
 # Fix download button
-# Postcode templates
-# Strip out long/lat into joins
-# Normalise to a maximum size.
+
 
 
 ## Since last time
-# Trim function implemented
-# Warning for outside region
-# Legend done in a hacky kind of way
-# Postcode centroids are in - have untrimmed the shapefile.
-# Function to actually launch shiny
-# Smoothed population colours (by MB)
-# Clean up description
+# Strip out long/lat into joins
+# Normalise to a maximum size. (Actually just capped it but i think it's good enough)
+# Postcode templates

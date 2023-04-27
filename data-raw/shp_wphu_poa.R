@@ -7,7 +7,7 @@ erp_wphu_poa <- read.csv("data-raw/ERP_POA.csv") %>%
   dplyr::filter(LPHU == "WPHU")
 
 # Get centroids of Postcodes, population data and weighted lat/long
-CoW::shp_wphu_poa <- shp_poa %>%
+shp_wphu_poa <- shp_poa %>%
   dplyr::mutate(
     centroids = st_centroid(st_geometry(.)),
     x = unlist(purrr::map(centroids, 1)),
@@ -20,4 +20,4 @@ CoW::shp_wphu_poa <- shp_poa %>%
   )
 
 
-usethis::use_data(CoW::shp_wphu_poa, overwrite = TRUE)
+usethis::use_data(shp_wphu_poa, overwrite = TRUE)

@@ -206,6 +206,13 @@ server <- function(input, output, session) {
       fname <- paste0("data_", i)
       if (!is.null(input[[fname]])) {
         infile <- read.csv(input[[fname]]$datapath)
+        # Check if the input file is a template with specific columns:
+        if ("postcode_or_lga" %in% colnames(infile) & "number_of_people" %in% colnames(infile)) {
+          infile <- infile |>
+            left_join(CoW::poa_lga_centroids, by = "postcode_or_lga") |>
+            select(-postcode_or_lga) |>
+            rename(person_weight = number_of_people)
+        }
         return(infile |>
           dplyr::select(longitude, latitude, person_weight) |>
           dplyr::mutate(filename = input[[fname]]$name))

@@ -7,3 +7,6 @@
   - Or aggregate up to a geography and then calculate the weighted centre of that (`wt.centroid` from SpatialEco might do this)
 - Start to think about leaflet design
 - Fix rounding in the printing
+
+- 
+postcode_or_lga, number_of_people

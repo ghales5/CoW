@@ -66,7 +66,7 @@ server <- function(input, output, session) {
     )
   })
 
-  map <- rdeck(
+  map <- reactive(rdeck(
     map_style = mapbox_dark(),
     initial_bounds = st_bbox(CoW::shp_wphu_lga)
   ) |>
@@ -193,8 +193,8 @@ server <- function(input, output, session) {
     CoW::add_data_layer(
       id = "data_1",
       dataset_num = 1
-    )
-  output$map <- renderRdeck(map)
+    ))
+  output$map <- renderRdeck(map())
 
   # Number of data file upload boxes
   num_data_files <- reactiveVal(1)
@@ -300,27 +300,27 @@ server <- function(input, output, session) {
     })
   })
 
-
+  inputPanels <- lapply(1:10, function(i) {
+    wellPanel(
+      fileInput(
+        paste0("data_", i), "Data upload (CSV)",
+        multiple = FALSE,
+        accept = c(
+          "text/csv",
+          "text/comma-separated-values,text/plain",
+          ".csv"
+        )
+      ),
+      colourInput(
+        paste0("data_colour_", i),
+        label = "Data Colour",
+        showColour = "background"
+      )
+    )
+  })
 
   output$fileInputs <- renderUI({
-    lapply(1:num_data_files(), function(i) {
-      wellPanel(
-        fileInput(
-          paste0("data_", i), "Data upload (CSV)",
-          multiple = FALSE,
-          accept = c(
-            "text/csv",
-            "text/comma-separated-values,text/plain",
-            ".csv"
-          )
-        ),
-        colourInput(
-          paste0("data_colour_", i),
-          label = "Data Colour",
-          showColour = "background"
-        )
-      )
-    }) |> tagList()
+    inputPanels[1:num_data_files()] |> tagList()
   })
 
   # Fires when the + button is pressed
@@ -363,7 +363,7 @@ server <- function(input, output, session) {
     },
     content = function(con) {
       htmlwidgets::saveWidget(
-        widget = rdeck::rdeck_proxy("map"),
+        widget = output$map,
         file = con
       )
     }

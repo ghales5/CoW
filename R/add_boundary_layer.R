@@ -13,7 +13,7 @@
 #' @return a deck object with the new boundary layer added
 #'
 #' @importFrom rdeck add_polygon_layer
-#' @importFrom sf st_transform st_union st_geometry geometry
+#' @importFrom sf st_transform st_union st_geometry
 #' @export
 add_boundary_layer <- function(rdeck, id, name, data, ...) {
     rdeck::add_polygon_layer(

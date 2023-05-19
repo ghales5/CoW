@@ -244,7 +244,7 @@ server <- function(input, output, session) {
             get_fill_color = "#63C5DA",
             get_line_color = "#000000ff",
             get_line_width = 1,
-            visible = TRUE,
+            visible = FALSE,
             name = tools::file_path_sans_ext(unique(raw_data()[[i]]$filename))
           )
 
@@ -261,7 +261,7 @@ server <- function(input, output, session) {
             get_fill_color = "#63C5DA",
             get_line_color = "#000000ff",
             get_line_width = 1,
-            visible = TRUE,
+            visible = FALSE,
             name = tools::file_path_sans_ext(unique(raw_data()[[i]]$filename))
           )
       }
@@ -295,6 +295,7 @@ server <- function(input, output, session) {
             get_fill_color = "#63C5DA",
             get_line_color = "#000000ff",
             get_line_width = 1,
+            visible = TRUE,
             name = tools::file_path_sans_ext(unique(raw_data()[[i]]$filename))
           )
 
@@ -308,6 +309,7 @@ server <- function(input, output, session) {
             get_fill_color = "#63C5DA",
             get_line_color = "#000000ff",
             get_line_width = 1,
+            visible = TRUE,
             name = tools::file_path_sans_ext(unique(raw_data()[[i]]$filename))
           )
       }

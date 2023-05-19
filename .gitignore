@@ -5,3 +5,4 @@
 .Rprofile
 inst/.DS_Store
 .gitignore
+docs

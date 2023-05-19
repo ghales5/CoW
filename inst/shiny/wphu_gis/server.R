@@ -66,7 +66,8 @@ server <- function(input, output, session) {
     )
   })
 
-  map <- reactive(rdeck(
+  env <- environment()
+  env$map <- rdeck(
     map_style = mapbox_dark(),
     initial_bounds = st_bbox(CoW::shp_wphu_lga)
   ) |>
@@ -193,8 +194,8 @@ server <- function(input, output, session) {
     CoW::add_data_layer(
       id = "data_1",
       dataset_num = 1
-    ))
-  output$map <- renderRdeck(map())
+    )
+  output$map <- renderRdeck(env$map)
 
   # Number of data file upload boxes
   num_data_files <- reactiveVal(1)
@@ -246,6 +247,23 @@ server <- function(input, output, session) {
             visible = TRUE,
             name = tools::file_path_sans_ext(unique(raw_data()[[i]]$filename))
           )
+
+        env$map <- env$map |>
+          rdeck::update_scatterplot_layer(
+            id = data_name,
+            data = apply(raw_data()[[i]], MARGIN = 1, CoW::convert_points_to_sfc, tooltip = "data") |>
+              dplyr::bind_rows() |>
+              dplyr::mutate(person_weight = raw_data()[[i]]$person_weight),
+            get_position = geometry,
+            get_radius = person_weight,
+            radius_max_pixels = 20,
+            radius_units = "pixels",
+            get_fill_color = "#63C5DA",
+            get_line_color = "#000000ff",
+            get_line_width = 1,
+            visible = TRUE,
+            name = tools::file_path_sans_ext(unique(raw_data()[[i]]$filename))
+          )
       }
     })
   })
@@ -279,6 +297,19 @@ server <- function(input, output, session) {
             get_line_width = 1,
             name = tools::file_path_sans_ext(unique(raw_data()[[i]]$filename))
           )
+
+        env$map <- env$map |>
+          rdeck::update_scatterplot_layer(
+            id = paste0("data_centroid_", i),
+            data = CoW::find_weighted_centroid(raw_data()[[i]], longitude, latitude, person_weight) |>
+              CoW::convert_points_to_sfc(tooltip = "Data", longitude_col = "centre_longitude", latitude_col = "centre_latitude"),
+            get_position = geometry,
+            get_radius = 1,
+            get_fill_color = "#63C5DA",
+            get_line_color = "#000000ff",
+            get_line_width = 1,
+            name = tools::file_path_sans_ext(unique(raw_data()[[i]]$filename))
+          )
       }
     })
   })
@@ -289,6 +320,16 @@ server <- function(input, output, session) {
       data_name <- paste0("data_", i)
       req(input[[data_name]], cancelOutput = TRUE)
       rdeck::rdeck_proxy("map") |>
+        rdeck::update_scatterplot_layer(
+          id = data_name,
+          get_fill_color = input[[paste0("data_colour_", i)]]
+        ) |>
+        rdeck::update_scatterplot_layer(
+          id = paste0("data_centroid_", i),
+          get_fill_color = input[[paste0("data_colour_", i)]]
+        )
+
+      env$map <- env$map |>
         rdeck::update_scatterplot_layer(
           id = data_name,
           get_fill_color = input[[paste0("data_colour_", i)]]
@@ -343,6 +384,16 @@ server <- function(input, output, session) {
             id = centroid_layer_name,
             dataset_num = num_data_files()
           )
+
+          env$map <- env$map |>
+          CoW::add_data_layer(
+            id = layer_name,
+            dataset_num = num_data_files()
+          ) |>
+          CoW::add_data_centroid_layer(
+            id = centroid_layer_name,
+            dataset_num = num_data_files()
+          )
       }
     }
   )
@@ -363,7 +414,7 @@ server <- function(input, output, session) {
     },
     content = function(con) {
       htmlwidgets::saveWidget(
-        widget = output$map,
+        widget = env$map,
         file = con
       )
     }
@@ -371,6 +422,19 @@ server <- function(input, output, session) {
 
   observe({
     rdeck::rdeck_proxy("map") |>
+      rdeck::add_scatterplot_layer(
+        id = "legend",
+        name = "Legend",
+        visibility_toggle = FALSE,
+        data = combined_data_for_legend(),
+        get_position = geometry,
+        get_fill_color = scale_color_category(
+          palette = combined_data_for_legend()$color,
+          col = tooltip
+        )
+      )
+
+    env$map <- env$map |>
       rdeck::add_scatterplot_layer(
         id = "legend",
         name = "Legend",

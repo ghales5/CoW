@@ -22,4 +22,5 @@ Imports:
     shiny,
     rdeck,
     viridis,
-    colourpicker
+    colourpicker,
+    shinyalert
